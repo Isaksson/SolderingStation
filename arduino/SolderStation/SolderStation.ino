@@ -12,8 +12,7 @@
 #include "iron.h"
 #include "stationLOGO.h"
 
-
-#define VERSION "1.5"		//Version der Steuerung
+const String VERSION = "1.5";
 #define INTRO
 
 const uint8_t TFT_CS = 10;
@@ -70,9 +69,7 @@ void setup(void) {
 	tft.setRotation(0);	// 0 - Portrait, 1 - Lanscape
 	tft.fillScreen(ST7735_BLACK);
 	tft.setTextWrap(true);
-	
-	
-	
+		
 	//Print station Logo
 	tft.drawBitmap(2,1,stationLOGO1,124,47,GREY);
 	
@@ -80,28 +77,8 @@ void setup(void) {
 	tft.drawBitmap(3,3,stationLOGO2,124,47,Color565(254,147,52));	
 	tft.drawBitmap(3,3,stationLOGO3,124,47,Color565(255,78,0));
 	
-	//BAcklight on
+	//Backlight on
 	digitalWrite(BLpin, HIGH);
-	
-	
-#if defined(INTRO)
-	
-	delay(500);
-	
-	//Print Iron
-	tft.drawBitmap(15,50,iron,100,106,GREY);
-	tft.drawBitmap(17,52,iron,100,106,ST7735_YELLOW);
-	delay(500);
-	
-	tft.setTextSize(2);
-	tft.setTextColor(GREY);
-	tft.setCursor(70,130);
-	tft.print(VERSION);
-	
-	tft.setTextSize(2);
-	tft.setTextColor(ST7735_YELLOW);
-	tft.setCursor(72,132);
-	tft.print(VERSION);
 	
 	tft.setTextSize(1);
 	tft.setTextColor(GREY);
@@ -109,34 +86,26 @@ void setup(void) {
 	tft.print("v");
 	tft.print(VERSION);
 	
-	tft.setTextColor(ST7735_YELLOW);
-	tft.setCursor(104,1);
-	tft.print("v");
-	tft.print(VERSION);
-	
-	delay(2500);
-#endif
-	
-	
 	tft.fillRect(0,47,128,125,ST7735_BLACK);
 	tft.setTextColor(ST7735_WHITE);
 
 	tft.setTextSize(1);
 	tft.setCursor(1,84);
-	tft.print("ist");
+	tft.print("Tgt");
 	
-	tft.setTextSize(2);
-	tft.setCursor(117,47);
+	tft.setTextSize(1);
+	tft.setCursor(116,48);
 	tft.print("o");
 	
 	tft.setTextSize(1);
 	tft.setCursor(1,129);
-	tft.print("soll");
+	tft.print("Curr");
 	
-	tft.setTextSize(2);
-	tft.setCursor(117,92);
+	tft.setTextSize(1);
+	tft.setCursor(116,93);
 	tft.print("o");
 	
+	tft.setTextSize(2);
 	tft.setCursor(80,144);
 	tft.print("   %");
 	
