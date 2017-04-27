@@ -91,7 +91,7 @@ void setup(void) {
 
 	tft.setTextSize(1);
 	tft.setCursor(1,84);
-	tft.print("Tgt");
+	tft.print("Tmp");
 	
 	tft.setTextSize(1);
 	tft.setCursor(116,48);
@@ -99,22 +99,17 @@ void setup(void) {
 	
 	tft.setTextSize(1);
 	tft.setCursor(1,129);
-	tft.print("Curr");
+	tft.print("Set");
 	
 	tft.setTextSize(1);
 	tft.setCursor(116,93);
 	tft.print("o");
 	
-	tft.setTextSize(2);
-	tft.setCursor(80,144);
-	tft.print("   %");
-	
 	tft.setTextSize(1);
-	tft.setCursor(1,151);		//60
-	tft.print("pwm");
-	
-	tft.setTextSize(2);
-	
+	tft.setCursor(1,151);
+	tft.print("Pwm");
+	tft.setCursor(116,146);
+	tft.print("%");
 }
 
 void loop() {
@@ -130,8 +125,6 @@ void loop() {
 	else
 		tft.setTextColor(ST7735_WHITE);
 	tft.print("SB");
-	
-	//
 	
 	int soll_temp_tmp = soll_temp;
 	
@@ -237,12 +230,10 @@ void writeHEATING(int tempSOLL, int tempVAL, int pwmVAL){
 		tempVAL_OLD = tempVAL;
 	}
 	
-	//if (tempSOLL_OLD != tempSOLL){
 	if ((tempSOLL_OLD+d_tempSOLL < tempSOLL) || (tempSOLL_OLD-d_tempSOLL > tempSOLL)){
 		tft.setCursor(30,102);
 		tft.setTextColor(ST7735_BLACK);
-		//tft.print(tempSOLL_OLD);
-		//erste Stelle unterschiedlich
+
 		if ((tempSOLL_OLD/100) != (tempSOLL/100)){
 			tft.print(tempSOLL_OLD/100);
 		}
@@ -275,8 +266,7 @@ void writeHEATING(int tempSOLL, int tempVAL, int pwmVAL){
 	if (pwmVAL_OLD != pwmVAL){
 		tft.setCursor(80,144);
 		tft.setTextColor(ST7735_BLACK);
-		//tft.print(tempSOLL_OLD);
-		//erste stelle Unterscheidlich
+
 		if ((pwmVAL_OLD/100) != (pwmVAL/100)){
 			tft.print(pwmVAL_OLD/100);
 		}
@@ -299,8 +289,7 @@ void writeHEATING(int tempSOLL, int tempVAL, int pwmVAL){
 			tft.print(" ");
 		
 		tft.print(pwmVAL);
-		pwmVAL_OLD = pwmVAL;
-		
+		pwmVAL_OLD = pwmVAL;		
 	}
 	
 }
