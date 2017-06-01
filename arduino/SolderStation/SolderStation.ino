@@ -12,7 +12,7 @@
 #include "iron.h"
 #include "stationLOGO.h"
 
-const String VERSION = "1.5";
+const String VERSION = "PM 0.1";
 #define INTRO
 
 const uint8_t TFT_CS = 10;
@@ -36,8 +36,8 @@ const double ADC_TO_TEMP_OFFSET = 25.0;
 const int STANDBY_TEMP = 175;
 
 const int OVER_SHOT = 2;
-const int MAX_PWM_LOW = 180;
-const int MAX_PWM_HI = 210;
+const int max_pwm_LOW = 180;
+const int max_pwm_HI = 210;
 const int MAX_POTI = 400;		//400Grad C
 
 const int PWM_DIV = 1024;		//default: 64   31250/64 = 2ms
@@ -47,8 +47,8 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 const uint16_t GREY = tft.Adafruit_ST7735::Color565(190,190,190);
 
 int pwm = 0; //pwm Out Val 0.. 255
-int soll_temp = 300;
-boolean standby_act = false;
+int target_temperature = 300;
+boolean standby_active = false;
 
 void setup(void) {
 	
@@ -82,8 +82,7 @@ void setup(void) {
 	
 	tft.setTextSize(1);
 	tft.setTextColor(GREY);
-	tft.setCursor(103,0);
-	tft.print("v");
+	tft.setCursor(50,0);
 	tft.print(VERSION);
 	
 	tft.fillRect(0,47,128,125,ST7735_BLACK);
@@ -112,56 +111,56 @@ void setup(void) {
 	tft.print("%");
 }
 
+void CheckStandby()
+{
+	if(digitalRead(STANDBYin))
+	{
+		tft.setTextColor(ST7735_BLACK);
+		standby_active = false;
+	}
+	else 
+	{
+		tft.setTextColor(ST7735_WHITE);
+		standby_active = true;
+	}
+	tft.setTextSize(1);
+	tft.setCursor(1,55);
+	tft.print("SB");
+}
+
 void loop() {
 	
 	int actual_temperature = getTemperature();
-	soll_temp = map(analogRead(POTI), 0, 1024, 0, MAX_POTI);
+	target_temperature = map(analogRead(POTI), 0, 1024, 0, MAX_POTI);
 	
+	CheckStandby();
+			
+	int target_temperature_tmp = target_temperature;
 	
-	//TODO: Put in Funktion
-	tft.setCursor(2,55);
-	if (digitalRead(STANDBYin) == true)
-		tft.setTextColor(ST7735_BLACK);
-	else
-		tft.setTextColor(ST7735_WHITE);
-	tft.print("SB");
-	
-	int soll_temp_tmp = soll_temp;
-	
-	if (digitalRead(STANDBYin) == false)
-		standby_act = true;
-	else
-		standby_act = false;
-	
-	if (standby_act && (soll_temp >= STANDBY_TEMP ))
-		soll_temp_tmp = STANDBY_TEMP;
+		
+	if (standby_active && (target_temperature >= STANDBY_TEMP ))
+		target_temperature_tmp = STANDBY_TEMP;
 	
 	
 	
-	int diff = (soll_temp_tmp + OVER_SHOT)- actual_temperature;
-	pwm = diff*CNTRL_GAIN;
+	int diff = (target_temperature_tmp + OVER_SHOT) - actual_temperature;
+	pwm = diff * CNTRL_GAIN;
 	
-	int MAX_PWM;
-
 	//Set max heating Power 
-	MAX_PWM = actual_temperature <= STANDBY_TEMP ? MAX_PWM_LOW : MAX_PWM_HI;
+	int max_pwm = actual_temperature <= STANDBY_TEMP ? max_pwm_LOW : max_pwm_HI;
 	
 	//8 Bit Range
-	pwm = pwm > MAX_PWM ? pwm = MAX_PWM : pwm < 0 ? pwm = 0 : pwm;
-	
-	
+	pwm = min(max_pwm, max(pwm, 0));
 	
 	//NOTfall sicherheit / Spitze nicht eingesteckt
 	if (actual_temperature > 550){
 		pwm = 0;
 		actual_temperature = 0;
 	}
-	
-	
+		
 	analogWrite(PWMpin, pwm);
-	//digitalWrite(PWMpin, LOW);
 	
-	writeHEATING(soll_temp, actual_temperature, pwm);
+	writeHEATING(target_temperature, actual_temperature, pwm);
 	
 	delay(DELAY_MAIN_LOOP);		//wait for some time
 }
@@ -169,17 +168,12 @@ void loop() {
 
 int getTemperature()
 {
-  analogWrite(PWMpin, 0);		//switch off heater
-  delay(DELAY_MEASURE);			//wait for some time (to get low pass filter in steady state)
-  int adcValue = analogRead(TEMPin); // read the input on analog pin 7:
-  Serial.print("ADC Value ");
-  Serial.print(adcValue);
-  analogWrite(PWMpin, pwm);	//switch heater back to last value
-  return round(((float) adcValue)*ADC_TO_TEMP_GAIN+ADC_TO_TEMP_OFFSET); //apply linear conversion to actual temperature
+	analogWrite(PWMpin, 0);		//switch off heater
+	delay(DELAY_MEASURE);			//wait for some time (to get low pass filter in steady state)
+	int adcValue = analogRead(TEMPin); // read the input
+	analogWrite(PWMpin, pwm);		//switch heater back to last value
+	return round(((float) adcValue)*ADC_TO_TEMP_GAIN+ADC_TO_TEMP_OFFSET); //apply linear conversion to actual temperature
 }
-
-
-
 
 
 void writeHEATING(int tempSOLL, int tempVAL, int pwmVAL){
@@ -223,7 +217,7 @@ void writeHEATING(int tempSOLL, int tempVAL, int pwmVAL){
 		int tempDIV = round(float(tempSOLL - tempVAL)*8.5);
 		tempDIV = tempDIV > 254 ? tempDIV = 254 : tempDIV < 0 ? tempDIV = 0 : tempDIV;
 		tft.setTextColor(Color565(tempDIV, 255-tempDIV, 0));
-		if (standby_act)
+		if (standby_active)
 			tft.setTextColor(ST7735_CYAN);
 		tft.print(tempVAL);
 		
