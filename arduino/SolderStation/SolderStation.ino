@@ -12,7 +12,7 @@
 #include "iron.h"
 #include "stationLOGO.h"
 
-const String VERSION = "PM 0.1";
+const String VERSION = "Isaksson 0.1";
 #define INTRO
 
 const uint8_t TFT_CS = 10;
@@ -66,7 +66,7 @@ void setup(void) {
 	SPI.setClockDivider(SPI_CLOCK_DIV4);  // 4MHz
 	
 	
-	tft.setRotation(0);	// 0 - Portrait, 1 - Lanscape
+	tft.setRotation(2);	// 2 - Portrait 180 degrees
 	tft.fillScreen(ST7735_BLACK);
 	tft.setTextWrap(true);
 		
